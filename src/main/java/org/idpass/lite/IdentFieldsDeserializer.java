@@ -3,30 +3,12 @@ package org.idpass.lite;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-
-import java.io.*;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
 
 public class IdentFieldsDeserializer extends StdDeserializer<IdentFields> {
-
-    public void f()
-            throws IOException
-    {
-        String proj = "idpass-mosip";
-        InputStream is = IdentFieldsDeserializer.class.getClassLoader().getResourceAsStream("idpass-lite-map.json");
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        JsonNode all = objectMapper.readTree(is);
-        JsonNode jproj = all.get(proj);
-        Map<String, FieldDesc> treeMap = objectMapper.readValue(jproj.toString(), Map.class);
-    }
 
     public IdentFieldsDeserializer() {
         this(null);
@@ -40,34 +22,40 @@ public class IdentFieldsDeserializer extends StdDeserializer<IdentFields> {
     public IdentFields deserialize(JsonParser parser, DeserializationContext deserializationContext)
             throws IOException, JsonProcessingException
     {
-        IdentFields idf = null;
+        IDPASSMap idpassMap = IDPASSMap.getInstance();
+
+        IdentFields ret = new IdentFields();
         ObjectCodec codec = parser.getCodec();
         JsonNode node = codec.readTree(parser);
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        /*
+        UIN
+        gender
+        givenName
+        surName
+        placeOfBirth
+        dateOfBirth
+        address
+        */
 
-        InputStream is = IdentFieldsDeserializer.class.getClassLoader().getResourceAsStream("idpass-lite-map.json");
-        JsonNode jMap = objectMapper.readTree(is);
+        String address = idpassMap.get(idpassMap.getAddress().from(node));
+        String UIN = idpassMap.get(idpassMap.getUIN().from(node));
+        String gender = idpassMap.get(idpassMap.getGender().from(node));
 
-        JsonNode m = jMap.get("idpass-mosip");
-        JsonNode a = m.get("lang");
-        int n = a.size();
-        JsonNode b = a.get(0);
-        String s = b.asText();
-        JsonNode c = a.get(1);
-        s = c.asText();
+        String surName = idpassMap.get(idpassMap.getSurName().from(node));
+        String givenName = idpassMap.get(idpassMap.getGivenName().from(node));
 
-        List<String> langs = objectMapper.readValue(is, new TypeReference<List<String>>(){});
+        String placeOfBirth = idpassMap.get(idpassMap.getPlaceOfBirth().from(node));
+        String dateOfBirth = idpassMap.get(idpassMap.getDateOfBirth().from(node));
 
-        try {
-            JsonNode colorNode = node.get("gender");
-            String color = colorNode.asText();
+        ret.setGivenName(givenName);
+        ret.setSurName(surName);
+        ret.setUIN(UIN);
+        ret.setGender(gender);
+        ret.setPlaceOfBirth(placeOfBirth);
+        ret.setDateOfBirth(dateOfBirth);
+        ret.setAddress(address);
 
-            idf = new IdentFields();
-            idf.setGender(color);
-
-        } catch (NullPointerException e) {}
-
-        return idf;
+        return ret;
     }
 }

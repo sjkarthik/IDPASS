@@ -1,7 +1,11 @@
 package org.idpass.lite;
 
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.protobuf.ByteString;
 import io.mosip.kernel.core.util.CryptoUtil;
+import org.api.proto.Dat;
 import org.api.proto.Ident;
 import org.api.proto.KV;
 import org.idpass.lite.exceptions.IDPassException;
@@ -14,6 +18,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 
 import com.github.jaiimageio.jpeg2000.impl.J2KImageReader;
@@ -35,6 +41,8 @@ public class IDPassReaderComponent
 
     public byte[] generateQrCode(String cs, String pincode, String photob64)
     {
+        IdentFields idf = IdentFields.getInstance(cs);
+
         Ident.Builder identBuilder = Ident.newBuilder()
                 .setPin(pincode);
 
@@ -48,13 +56,32 @@ public class IDPassReaderComponent
             identBuilder.setPhoto(ByteString.copyFrom(photo));
         }
 
-        Iterator<String> keys = credentialSubject.keySet().iterator();
+        /*
+        UIN
+        gender
+        givenName
+        surName
+        placeOfBirth
+        dateOfBirth
+        address
+        */
 
-        while (keys.hasNext()) {
-            String keyStr = keys.next();
-            String strVal = (String)credentialSubject.get(keyStr);
-            identBuilder.addPubExtra(KV.newBuilder().setKey(keyStr).setValue(strVal));
-        }
+        String dobStr = idf.getDateOfBirth();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/d");
+        LocalDate dob = LocalDate.parse(dobStr, formatter);
+        Dat dobProto = Dat.newBuilder()
+                .setYear(dob.getYear())
+                .setMonth(dob.getMonthValue())
+                .setDay(dob.getDayOfMonth())
+                .build();
+
+        identBuilder.addPrivExtra(KV.newBuilder().setKey("UIN").setValue(idf.getUIN()));
+        identBuilder.addPubExtra(KV.newBuilder().setKey("Gender").setValue(idf.getGender()));
+        identBuilder.addPubExtra(KV.newBuilder().setKey("Address").setValue(idf.getAddress()));
+        identBuilder.setGivenName(idf.getGivenName());
+        identBuilder.setSurName(idf.getSurName());
+        identBuilder.setPlaceOfBirth(idf.getPlaceOfBirth());
+        identBuilder.setDateOfBirth(dobProto);
 
         Ident ident = identBuilder.build();
         byte[] qrcodeId = null;

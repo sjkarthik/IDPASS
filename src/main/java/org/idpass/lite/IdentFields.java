@@ -1,5 +1,11 @@
 package org.idpass.lite;
 
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+
+import java.io.IOException;
+
 public class IdentFields {
     private String UIN;
     private String gender;
@@ -7,20 +13,36 @@ public class IdentFields {
     private String surName;
     private String placeOfBirth;
     private String dateOfBirth;
-    private String pin;
     private String address;
+
+    public static IdentFields getInstance(String cs) {
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule("IdentFieldsDeserializer",
+                new Version(1,0,0,null,null,null));
+        module.addDeserializer(IdentFields.class, new IdentFieldsDeserializer());
+        mapper.registerModule(module);
+
+        IdentFields idf = null;
+
+        try {
+            idf = mapper.readValue(cs, IdentFields.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return idf;
+    }
 
     public IdentFields() {
     }
 
-    public IdentFields(String UIN, String gender, String givenName, String surName, String placeOfBirth, String dateOfBirth, String pin, String address) {
+    public IdentFields(String UIN, String gender, String givenName, String surName, String placeOfBirth, String dateOfBirth, String address) {
         this.UIN = UIN;
         this.gender = gender;
         this.givenName = givenName;
         this.surName = surName;
         this.placeOfBirth = placeOfBirth;
         this.dateOfBirth = dateOfBirth;
-        this.pin = pin;
         this.address = address;
     }
 
@@ -70,14 +92,6 @@ public class IdentFields {
 
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getPin() {
-        return pin;
-    }
-
-    public void setPin(String pin) {
-        this.pin = pin;
     }
 
     public String getAddress() {

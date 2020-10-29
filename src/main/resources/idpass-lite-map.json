@@ -1,5 +1,4 @@
 {
-    "idpass-mosip": {
         "lang": ["en", "fra"],
 		"UIN": {
 			"value": "UIN",
@@ -37,5 +36,4 @@
 			"value": "addressLine1,addressLine2,addressLine3,region,province,postalCode",
 			"isMandatory" : false 
 		}
-	}
 }
