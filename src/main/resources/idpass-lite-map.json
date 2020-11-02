@@ -1,5 +1,5 @@
 {
-        "lang": ["en", "fra"],
+        "lang": ["eng", "fra"],
 		"UIN": {
 			"value": "UIN",
 			"isMandatory" : true

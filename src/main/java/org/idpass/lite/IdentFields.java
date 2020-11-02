@@ -17,8 +17,7 @@ public class IdentFields {
 
     public static IdentFields getInstance(String cs) {
         ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule("IdentFieldsDeserializer",
-                new Version(1,0,0,null,null,null));
+        SimpleModule module = new SimpleModule();
         module.addDeserializer(IdentFields.class, new IdentFieldsDeserializer());
         mapper.registerModule(module);
 

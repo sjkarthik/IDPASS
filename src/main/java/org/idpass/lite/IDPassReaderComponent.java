@@ -1,15 +1,11 @@
 package org.idpass.lite;
 
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.protobuf.ByteString;
 import io.mosip.kernel.core.util.CryptoUtil;
 import org.api.proto.Dat;
 import org.api.proto.Ident;
 import org.api.proto.KV;
 import org.idpass.lite.exceptions.IDPassException;
-import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -20,7 +16,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
 
 import com.github.jaiimageio.jpeg2000.impl.J2KImageReader;
 
@@ -49,8 +44,6 @@ public class IDPassReaderComponent
         String imageType = photob64.split(",")[0];
         byte[] photo = CryptoUtil.decodeBase64(photob64.split(",")[1]);
         photo = convertToJPG(photo);
-
-        JSONObject credentialSubject = new JSONObject(cs);
 
         if (photo != null) {
             identBuilder.setPhoto(ByteString.copyFrom(photo));

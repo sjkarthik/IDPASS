@@ -1,8 +1,6 @@
 package org.idpass.lite;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -14,11 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class IDPASSMap {
-    private List<String> lang;
+    public static List<String> lang;
     @JsonProperty("UIN")
     private FieldDesc UIN;
     private FieldDesc gender;
@@ -114,24 +113,7 @@ public class IDPASSMap {
     public String get(String data) {
         String ret = "";
         if (data == null) return ret;
-
-        ObjectMapper m = new ObjectMapper();
-        try {
-            List<SourceDesc> L = m.readValue(data, new TypeReference<List<SourceDesc>>(){});
-            here:
-            for (String x : lang) {
-                for (SourceDesc s : L) {
-                    if (s.language.equals(x)) {
-                        ret = s.value;
-                        break here;
-                    }
-                }
-            }
-        } catch (JsonProcessingException e) {
-            ret = data;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        else ret = data;
 
         String arr[];
 
@@ -139,12 +121,22 @@ public class IDPASSMap {
             switch (f) {
                 case "surName":
                     arr = ret.split("\\s*(,|\\s)\\s*");
-                    ret = arr[0];
-                    break;
+                    if (ret.contains(",")) {
+                        ret = arr[0];
+                    } else {
+                        List<String> L = Arrays.asList(arr);
+                        ret = L.get(L.size() - 1);
+                    }
+                   break;
 
                 case "givenName":
                     arr = ret.split("\\s*(,|\\s)\\s*");
-                    ret = arr[1];
+                    if (ret.contains(",")) {
+                        List<String> L = Arrays.asList(arr);
+                        ret = L.stream().skip(1).collect(Collectors.joining(" "));
+                    } else {
+                        ret = arr[0];
+                    }
                     break;
 
                 case "dateOfBirth":
